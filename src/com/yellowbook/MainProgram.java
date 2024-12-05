@@ -3,168 +3,203 @@ package com.yellowbook;
 import java.util.Scanner;
 
 public class MainProgram {
+
     public static void main(String[] args) {
+        // Create scanner and phonebook
         Scanner scanner = new Scanner(System.in);
         PhoneBook phoneBook = new PhoneBook();
-        User currentUser = null;
 
-        // Log in menu
-        while (currentUser == null) {
-            System.out.println("Welcome to the Yellow Book!");
-            System.out.println("1. Log in as Admin");
-            System.out.println("2. Log in as Guest");
-            System.out.print("Enter your choice: ");
-            int option = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+        // Add some profiles for testing
+        phoneBook.addProfile(new Profile("Eliana", "Johansson", 25, "Eriksbergsvägen 12", "Malmö", "21145", "1201"));
+        phoneBook.addProfile(new Profile("Firas", "Hammamieh", 31, "Hjalmar Söderbergs Väg 10", "Kristianstad", "29145", "1501"));
 
-            switch (option) {
-                case 1 -> {
-                    System.out.print("Enter Admin username: ");
-                    String username = scanner.nextLine();
-                    System.out.print("Enter Admin password: ");
-                    String password = scanner.nextLine();
-                    if ("Admin".equals(username) && "12345".equals(password)) {
-                        currentUser = new Admin(username, password);
-                        System.out.println("Logged in as Admin.");
-                    } else {
-                        System.out.println("Invalid Admin credentials. Try again.");
-                    }
-                }
-                case 2 -> {
-                    currentUser = new Guest("Guest", "guest123");
-                    System.out.println("Logged in as Guest.");
-                }
-                default -> System.out.println("Invalid choice. Please select 1 or 2.");
-            }
-        }
-
-        // Main menu
+        // Start the program
         while (true) {
-            if (currentUser instanceof Admin) {
-                System.out.println("\nChoose an action: ");
-                System.out.println("1. Add Profile");
-                System.out.println("2. Update Profile");
-                System.out.println("3. Delete Profile");
-                System.out.println("4. Search Profiles");
-                System.out.println("5. Exit");
+            System.out.println("Select user type:");
+            System.out.println("1. Admin");
+            System.out.println("2. Guest");
+            System.out.println("3. Exit program");
+            String userType = scanner.nextLine();
+
+            // Guest user type
+            if (userType.equals("2")) {
+                guestActions(scanner, phoneBook);
+            }
+            // Admin user type
+            else if (userType.equals("1")) {
+                adminActions(scanner, phoneBook);
+            }
+            // Exit the program
+            else if (userType.equals("3")) {
+                System.out.println("Exiting the program...");
+                break;
             } else {
-                System.out.println("\nChoose an action: ");
-                System.out.println("4. Search Profiles");
-                System.out.println("5. Exit");
-            }
-
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
-            switch (choice) {
-                case 1 -> {
-                    if (currentUser instanceof Admin) addProfile(phoneBook, scanner);
-                    else System.out.println("Access denied.");
-                }
-                case 2 -> {
-                    if (currentUser instanceof Admin) updateProfile(phoneBook, scanner);
-                    else System.out.println("Access denied.");
-                }
-                case 3 -> {
-                    if (currentUser instanceof Admin) deleteProfile(phoneBook, scanner);
-                    else System.out.println("Access denied.");
-                }
-                case 4 -> searchProfile(phoneBook, scanner);
-                case 5 -> {
-                    System.out.println("Exiting...");
-                    scanner.close();
-                    return;
-                }
-                default -> System.out.println("Invalid choice. Please try again.");
+                System.out.println("Invalid choice, please try again.");
             }
         }
     }
 
-    private static void addProfile(PhoneBook phoneBook, Scanner scanner) {
-        System.out.print("Enter first name: ");
-        String firstName = scanner.nextLine();
-        System.out.print("Enter last name: ");
-        String lastName = scanner.nextLine();
-        System.out.print("Enter address: ");
-        String address = scanner.nextLine();
-        System.out.print("Enter phone number: ");
-        String phoneNumber = scanner.nextLine();
+    // Guest actions
+    private static void guestActions(Scanner scanner, PhoneBook phoneBook) {
+        while (true) {
+            System.out.println("What would you like to do?");
+            System.out.println("1. Search for profile");
+            System.out.println("2. Show all profiles");
+            System.out.println("3. Go back");
+            System.out.println("4. Exit");
+            String choice = scanner.nextLine();
 
-        Profile profile = new Profile(firstName, lastName, address, phoneNumber);
-        phoneBook.addProfile(profile);
-        System.out.println("Profile added successfully!");
+            if (choice.equals("1")) {
+                System.out.println("Enter search term (first name, last name, address, or free search):");
+                String searchTerm = scanner.nextLine();
+                phoneBook.searchByAnyProperty(searchTerm);
+            } else if (choice.equals("2")) {
+                phoneBook.displayAllProfiles(); // Show all profiles
+            } else if (choice.equals("3")) {
+                return; // Go back to the main menu
+            } else if (choice.equals("4")) {
+                System.out.println("Exiting the program...");
+                System.exit(0); // Exit the program
+            } else {
+                System.out.println("Invalid choice, please try again.");
+            }
+        }
     }
 
-    private static void updateProfile(PhoneBook phoneBook, Scanner scanner) {
-        System.out.print("Enter last name of profile to update: ");
-        String lastName = scanner.nextLine();
-        Profile existingProfile = phoneBook.getProfileByLastName(lastName);
+    // Admin actions
+    private static void adminActions(Scanner scanner, PhoneBook phoneBook) {
+        System.out.print("Enter admin password: ");
+        String password = scanner.nextLine();
 
-        if (existingProfile != null) {
-            System.out.println("Current Profile: " + existingProfile);
-            System.out.print("Enter new first name: ");
-            String firstName = scanner.nextLine();
-            System.out.print("Enter new last name: ");
-            String newLastName = scanner.nextLine();
-            System.out.print("Enter new address: ");
-            String address = scanner.nextLine();
-            System.out.print("Enter new phone number: ");
-            String phoneNumber = scanner.nextLine();
+        if (password.equals("admin123")) {
+            while (true) {
+                System.out.println("What would you like to do?");
+                System.out.println("1. Search for profile");
+                System.out.println("2. Add profile");
+                System.out.println("3. Remove profile");
+                System.out.println("4. Update profile");
+                System.out.println("5. Show all profiles");
+                System.out.println("6. Go back");
+                System.out.println("7. Exit");
+                String choice = scanner.nextLine();
 
-            Profile updatedProfile = new Profile(firstName, newLastName, address, phoneNumber);
-            phoneBook.updateProfile(lastName, updatedProfile);
-            System.out.println("Profile updated successfully!");
+                switch (choice) {
+                    case "1":
+                        System.out.println("Enter search term:");
+                        String searchTerm = scanner.nextLine();
+                        phoneBook.searchByAnyProperty(searchTerm);
+                        break;
+                    case "2":
+                        addProfile(scanner, phoneBook);
+                        break;
+                    case "3":
+                        removeProfile(scanner, phoneBook);
+                        break;
+                    case "4":
+                        updateProfile(scanner, phoneBook);
+                        break;
+                    case "5":
+                        phoneBook.displayAllProfiles(); // Show all profiles
+                        break;
+                    case "6":
+                        return; // Go back to the main menu
+                    case "7":
+                        System.out.println("Exiting the program...");
+                        System.exit(0); // Exit the program
+                    default:
+                        System.out.println("Invalid choice, please try again.");
+                }
+            }
         } else {
-            System.out.println("Profile not found.");
+            System.out.println("Incorrect password, please try again.");
         }
     }
 
-    private static void deleteProfile(PhoneBook phoneBook, Scanner scanner) {
-        System.out.print("Enter last name of profile to delete: ");
+    // Add profile
+    private static void addProfile(Scanner scanner, PhoneBook phoneBook) {
+        System.out.println("Enter first name:");
+        String firstName = scanner.nextLine();
+        System.out.println("Enter last name:");
         String lastName = scanner.nextLine();
-        phoneBook.deleteProfile(lastName);
-        System.out.println("Profile deleted successfully!");
+        System.out.println("Enter age:");
+        int age = Integer.parseInt(scanner.nextLine());
+        System.out.println("Enter street:");
+        String street = scanner.nextLine();
+        System.out.println("Enter city:");
+        String city = scanner.nextLine();
+        System.out.println("Enter postal code:");
+        String postalCode = scanner.nextLine();
+        System.out.println("Enter apartment number:");
+        String apartmentNumber = scanner.nextLine();
+
+        Profile profile = new Profile(firstName, lastName, age, street, city, postalCode, apartmentNumber);
+        phoneBook.addProfile(profile);
+        System.out.println("Profile added by Admin.");
     }
 
-    private static void searchProfile(PhoneBook phoneBook, Scanner scanner) {
-        System.out.println("Search by: ");
-        System.out.println("1. Last Name");
-        System.out.println("2. Address");
-        System.out.print("Your choice: ");
-        int option = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+    // Remove profile
+    private static void removeProfile(Scanner scanner, PhoneBook phoneBook) {
+        System.out.println("Enter first name of the profile to remove:");
+        String firstName = scanner.nextLine();
+        System.out.println("Enter last name of the profile to remove:");
+        String lastName = scanner.nextLine();
 
-        switch (option) {
-            case 1 -> {
-                System.out.print("Enter last name: ");
-                String lastName = scanner.nextLine();
-                Profile profile = phoneBook.getProfileByLastName(lastName);
-                if (profile != null) {
-                    System.out.println("\nProfile found: ");
-                    System.out.println("----------------------------");
-                    System.out.printf("| %-15s | %-15s | %-20s | %-15s |\n", "First Name", "Last Name", "Address", "Phone Number");
-                    System.out.println("----------------------------");
-                    System.out.printf("| %-15s | %-15s | %-20s | %-15s |\n", profile.getFirstName(), profile.getLastName(), profile.getAddress(), profile.getPhoneNumber());
-                    System.out.println("----------------------------");
-                } else {
-                    System.out.println("No profile found with that last name.");
-                }
+        // Find profile and remove it
+        Profile profileToRemove = null;
+        for (Profile profile : phoneBook.getProfiles()) {
+            if (profile.getFirstName().equalsIgnoreCase(firstName) && profile.getLastName().equalsIgnoreCase(lastName)) {
+                profileToRemove = profile;
+                break;
             }
-            case 2 -> {
-                System.out.print("Enter address: ");
-                String address = scanner.nextLine();
-                Profile profile = phoneBook.getProfileByAddress(address);
-                if (profile != null) {
-                    System.out.println("\nProfile found: ");
-                    System.out.println("----------------------------");
-                    System.out.printf("| %-15s | %-15s | %-20s | %-15s |\n", "First Name", "Last Name", "Address", "Phone Number");
-                    System.out.println("----------------------------");
-                    System.out.printf("| %-15s | %-15s | %-20s | %-15s |\n", profile.getFirstName(), profile.getLastName(), profile.getAddress(), profile.getPhoneNumber());
-                    System.out.println("----------------------------");
-                } else {
-                    System.out.println("No profile found with that address.");
-                }
+        }
+
+        if (profileToRemove != null) {
+            phoneBook.removeProfile(profileToRemove);
+            System.out.println("Profile removed.");
+        } else {
+            System.out.println("No profile found with that name.");
+        }
+    }
+
+    // Update profile
+    private static void updateProfile(Scanner scanner, PhoneBook phoneBook) {
+        System.out.println("Enter first name of the profile to update:");
+        String firstName = scanner.nextLine();
+        System.out.println("Enter last name of the profile to update:");
+        String lastName = scanner.nextLine();
+
+        // Find profile for updating
+        Profile profileToUpdate = null;
+        for (Profile profile : phoneBook.getProfiles()) {
+            if (profile.getFirstName().equalsIgnoreCase(firstName) && profile.getLastName().equalsIgnoreCase(lastName)) {
+                profileToUpdate = profile;
+                break;
             }
-            default -> System.out.println("Invalid input. Please try again.");
+        }
+
+        if (profileToUpdate != null) {
+            System.out.println("Enter new information:");
+            System.out.println("Enter first name:");
+            String newFirstName = scanner.nextLine();
+            System.out.println("Enter last name:");
+            String newLastName = scanner.nextLine();
+            System.out.println("Enter age:");
+            int newAge = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter street:");
+            String newStreet = scanner.nextLine();
+            System.out.println("Enter city:");
+            String newCity = scanner.nextLine();
+            System.out.println("Enter postal code:");
+            String newPostalCode = scanner.nextLine();
+            System.out.println("Enter apartment number:");
+            String newApartmentNumber = scanner.nextLine();
+
+            // Create a new profile with updated data
+            Profile updatedProfile = new Profile(newFirstName, newLastName, newAge, newStreet, newCity, newPostalCode, newApartmentNumber);
+            phoneBook.updateProfile(profileToUpdate, updatedProfile);
+            System.out.println("Profile updated.");
+        } else {
+            System.out.println("No profile found with that name.");
         }
     }
 }
